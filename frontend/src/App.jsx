@@ -1,32 +1,35 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 function App() {
   const [decodeFile, setDecodeFile] = useState(null);
   const [decodedText, setDecodedText] = useState("");
   const [loading, setLoading] = useState(false);
   const [encodedImage, setEncodedImage] = useState("");
 
+  // ✅ ENCODE IMAGE
   const encodeImage = async () => {
     try {
       setLoading(true);
 
-      await axios.post("http://127.0.0.1:8000/encode");
+      await axios.post(`${API}/encode`);
 
-     setEncodedImage(
-  `http://127.0.0.1:8000/files/encoded_output.png?t=${Date.now()}`
-
+      setEncodedImage(
+        `${API}/files/encoded_output.png?t=${Date.now()}`
       );
 
       alert("Encoded Image Generated Successfully");
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       alert("Encoding Failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ DECODE IMAGE
   const decodeImage = async () => {
     if (!decodeFile) {
       alert("Please select an image");
@@ -40,13 +43,13 @@ function App() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://127.0.0.1:8000/decode",
+        `${API}/decode`,
         formData
       );
 
       setDecodedText(res.data.decoded_text);
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data || err.message);
       alert("Decoding Failed");
     } finally {
       setLoading(false);
@@ -54,60 +57,50 @@ function App() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0f172a, #1e293b, #334155)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        color: "white",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "750px",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(15px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "24px",
-          padding: "35px",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            fontSize: "2.8rem",
-            fontWeight: "700",
-            marginBottom: "10px",
-          }}
-        >
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0f172a, #1e293b, #334155)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "20px",
+      color: "white",
+    }}>
+      <div style={{
+        width: "100%",
+        maxWidth: "750px",
+        background: "rgba(255,255,255,0.08)",
+        backdropFilter: "blur(15px)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        borderRadius: "24px",
+        padding: "35px",
+        boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+      }}>
+
+        <h1 style={{
+          textAlign: "center",
+          fontSize: "2.8rem",
+          fontWeight: "700",
+          marginBottom: "10px",
+        }}>
           Secure Image Steganography
         </h1>
 
-        <p
-          style={{
-            textAlign: "center",
-            color: "#cbd5e1",
-            marginBottom: "30px",
-          }}
-        >
+        <p style={{
+          textAlign: "center",
+          color: "#cbd5e1",
+          marginBottom: "30px",
+        }}>
           Encode and decode hidden information inside images
         </p>
 
-        {/* Encode Section */}
-        <div
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "25px",
-          }}
-        >
+        {/* ENCODE */}
+        <div style={{
+          background: "rgba(255,255,255,0.05)",
+          padding: "20px",
+          borderRadius: "12px",
+          marginBottom: "25px",
+        }}>
           <h3>Generate Encoded Image</h3>
 
           <button
@@ -128,17 +121,15 @@ function App() {
           </button>
         </div>
 
-        {/* Encoded Preview */}
+        {/* ENCODED IMAGE */}
         {encodedImage && (
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              padding: "20px",
-              borderRadius: "12px",
-              marginBottom: "25px",
-              textAlign: "center",
-            }}
-          >
+          <div style={{
+            background: "rgba(255,255,255,0.05)",
+            padding: "20px",
+            borderRadius: "12px",
+            marginBottom: "25px",
+            textAlign: "center",
+          }}>
             <h3>Encoded Image Preview</h3>
 
             <img
@@ -166,19 +157,17 @@ function App() {
                 textDecoration: "none",
               }}
             >
-              Download Encoded Image
+              Download Image
             </a>
           </div>
         )}
 
-        {/* Decode Section */}
-        <div
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            padding: "20px",
-            borderRadius: "12px",
-          }}
-        >
+        {/* DECODE */}
+        <div style={{
+          background: "rgba(255,255,255,0.05)",
+          padding: "20px",
+          borderRadius: "12px",
+        }}>
           <h3>Decode Hidden Message</h3>
 
           <input
@@ -208,36 +197,29 @@ function App() {
           </button>
         </div>
 
+        {/* LOADING */}
         {loading && (
-          <p
-            style={{
-              textAlign: "center",
-              marginTop: "20px",
-            }}
-          >
+          <p style={{ textAlign: "center", marginTop: "20px" }}>
             Processing...
           </p>
         )}
 
+        {/* RESULT */}
         {decodedText && (
-          <div
-            style={{
-              marginTop: "25px",
-              padding: "20px",
-              background: "rgba(74, 222, 128, 0.1)",
-              border: "1px solid rgba(74,222,128,0.3)",
-              borderRadius: "12px",
-            }}
-          >
+          <div style={{
+            marginTop: "25px",
+            padding: "20px",
+            background: "rgba(74, 222, 128, 0.1)",
+            border: "1px solid rgba(74,222,128,0.3)",
+            borderRadius: "12px",
+          }}>
             <h3>Decoded Message</h3>
 
-            <p
-              style={{
-                fontSize: "22px",
-                fontWeight: "bold",
-                color: "#4ade80",
-              }}
-            >
+            <p style={{
+              fontSize: "22px",
+              fontWeight: "bold",
+              color: "#4ade80",
+            }}>
               {decodedText}
             </p>
           </div>
